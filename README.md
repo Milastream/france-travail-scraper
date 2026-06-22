@@ -1,133 +1,192 @@
-[France Travail Scraper](https://apify.com/santamaria-automations/france-travail-scraper?fpr=data)
+[France Travail Scraper](https://apify.com/shahidirfan/france-travail-scraper?fpr=data)
 
-# France Travail Job Scraper
-
-Scrape job listings from **France Travail** (formerly Pole Emploi), France's public employment service with 500,000+ active job listings. Extract title, company, location, contract type, salary, and full description.
-
-HTTP-only scraper using Cheerio (no browser). Runs at 128MB memory.
-
----
-
-## Scraper d'offres d'emploi France Travail
-
-Scrapez les offres d'emploi de **France Travail** (anciennement Pole Emploi), le service public de l'emploi en France avec plus de 500 000 offres actives. Extrayez le titre, l'entreprise, la localisation, le type de contrat, le salaire et la description complete.
-
-## Use with AI Agents (MCP)
-
-Connect this actor to any MCP-compatible AI client — Claude Desktop, Claude.ai, Cursor, VS Code, LangChain, LlamaIndex, or custom agents.
-
-**Apify MCP server URL:**
-
-```
-https://mcp.apify.com?tools=santamaria-automations/france-travail-scraper
-```
-
-**Example prompt once connected:**
-
-> "Use `france-travail-scraper` to scrape job listings from france travail. Return results as a table."
-
-Clients that support dynamic tool discovery (Claude.ai, VS Code) will receive the full input schema automatically via `add-actor`.
-
-## Related Actors
-
-Looking for more job data? Check out our other scrapers:
-
-**Global**
-
-- [LinkedIn Jobs Scraper](https://apify.com/santamaria-automations/linkedin-scraper)
-- [Indeed Scraper](https://apify.com/santamaria-automations/indeed-scraper)
-
-**DACH Region**
-
-- [Jobs.ch Scraper](https://apify.com/santamaria-automations/jobs-ch-scraper)
-- [StepStone.de Scraper](https://apify.com/santamaria-automations/stepstone-de-scraper)
-- [Karriere.at Scraper](https://apify.com/santamaria-automations/karriere-at-scraper)
-
-**Nordics**
-
-- [Arbetsformedlingen.se Scraper](https://apify.com/santamaria-automations/arbetsformedlingen-se-scraper) -- Swedish jobs
-- [Jobindex.dk Scraper](https://apify.com/santamaria-automations/jobindex-dk-scraper) -- Danish jobs
-
-**UK**
-
-- [Reed.co.uk Scraper](https://apify.com/santamaria-automations/reed-uk-scraper) -- UK jobs
-
-**Enrich your job data**
-
-- [Website Job Extractor](https://apify.com/santamaria-automations/website-job-extractor)
-- [Website Contact Extractor](https://apify.com/santamaria-automations/website-contact-extractor)
-
----
+Scrape job listings from **France Travail** (formerly Pôle Emploi) — the French national employment agency. Extract structured job data including title, company, location, salary, contract type, description, skills, experience requirements, and more.
 
 ## Features
 
-- **500,000+ active listings** from France's largest public job board
-- **Multi-query support** -- run multiple search keywords in one execution, deduplicated
-- **SERP + Detail modes** -- fast SERP-only or full detail extraction with salary and remote info
-- **French contract types** -- CDI, CDD, interim, alternance, stage
-- **Remote detection** -- detects teletravail (remote work) mentions
-- **Salary parsing** -- structured min/max from French salary formats (annuel, mensuel, horaire)
-- **Location filtering** -- filter by department code (75 = Paris, 69 = Lyon, etc.)
-- **Low cost** -- 128MB memory, HTTP-only
+- Search jobs by keyword, location, and radius
+- Filter by contract type (CDI, CDD, Intérim, etc.)
+- Collect detailed job information from individual offer pages
+- Automatic pagination to gather large datasets
+- Batched dataset writes for faster large runs
+- Cleaner records by omitting null and empty fields by default
+- Export data in JSON, CSV, Excel, or connect via API
+- Built-in proxy support for reliable data collection
 
-## Output Fields
+---
+
+## Use Cases
+
+- **Job market research** — Analyze employment trends across French regions
+- **Salary benchmarking** — Compare salary ranges by role, sector, and location
+- **HR and recruitment** — Discover active job postings from competitors
+- **Academic research** — Study labor market dynamics, skill demand, and sector growth
+- **Career planning** — Monitor job openings matching your profile
+
+---
+
+## Input Parameters
+
+| Parameter | Type | Description | Default |
+| --- | --- | --- | --- |
+| `startUrl` | string | A specific France Travail search URL to start from | — |
+| `keyword` | string | Job search keyword(s), e.g., "admin", "développeur" | `admin` |
+| `location` | string | Location filter, e.g., "Paris", "Lyon" | — |
+| `radius` | integer | Search radius in km | `10` |
+| `contractType` | string | Filter by contract: CDI, CDD, Intérim, etc. | — |
+| `collectDetails` | boolean | Visit detail pages for full job info | `true` |
+| `results_wanted` | integer | Maximum number of results to collect | `20` |
+| `max_pages` | integer | Maximum listing pages to visit | `10` |
+| `detail_concurrency` | integer | Parallel detail requests (1-20) | `8` |
+| `push_batch_size` | integer | Number of records pushed per dataset batch | `25` |
+| `omit_null_values` | boolean | Remove null/empty fields from each record | `true` |
+| `proxyConfiguration` | object | Proxy settings (residential recommended) | Apify Proxy |
+
+---
+
+## Output Data
+
+Each job listing contains the following fields:
 
 | Field | Type | Description |
 | --- | --- | --- |
-| `id` | string | France Travail offer ID |
-| `title` | string | Job title |
-| `company` | string/null | Hiring company name |
-| `location` | string | Job location (city, department) |
-| `country` | string | Always "FR" |
-| `employment_type` | string/null | full-time, temporary, internship, etc. |
-| `remote_option` | string/null | remote, hybrid, or null |
-| `salary_min` | number/null | Minimum salary (EUR) |
-| `salary_max` | number/null | Maximum salary (EUR) |
-| `salary_text` | string/null | Salary as displayed |
-| `description_snippet` | string/null | Short description (max 500 chars) |
-| `description_full` | string/null | Full description (detail mode only) |
-| `posted_at` | string/null | Publication date |
-| `source_url` | string | France Travail listing URL |
-| `source_platform` | string | Always "francetravail.fr" |
-| `search_query` | string/null | The search keyword that found this job |
-| `scraped_at` | string | Scrape timestamp (ISO 8601) |
+| `job_title` | string | Job title |
+| `offer_id` | string | France Travail offer reference number |
+| `company` | string | Employer name |
+| `location` | string | Department and city (e.g., "33 - BORDEAUX") |
+| `contract_type` | string | CDI, CDD, Intérim, etc. |
+| `work_hours` | string | Temps plein, Temps partiel |
+| `salary` | string | Salary details (annual, monthly, or hourly) |
+| `date_posted` | string | Publication date |
+| `description_text` | string | Full job description (plain text) |
+| `description_html` | string | Full job description (HTML) |
+| `experience` | string | Required experience |
+| `formation` | string | Required education or training |
+| `skills` | array | Required competencies |
+| `languages` | array | Required languages |
+| `qualification` | string | Qualification level |
+| `sector` | string | Industry sector |
+| `latitude` | number | Job latitude when available |
+| `longitude` | number | Job longitude when available |
+| `url` | string | Direct link to the job offer |
 
-## Input Examples
+---
 
-### Basic search
+## Usage Examples
 
-```
-{
-  "searchQuery": "developpeur",
-  "maxResults": 50
-}
-```
-
-### Multi-query with location
+### Search by keyword
 
 ```
 {
-  "searchQueries": ["developpeur", "ingenieur", "data scientist"],
-  "location": "75",
-  "maxResults": 200,
-  "maxResultsPerQuery": 100
+    "keyword": "développeur web",
+    "results_wanted": 50
 }
 ```
 
-### With full details (salary + description)
+### Search with location and radius
 
 ```
 {
-  "searchQueries": ["developpeur python"],
-  "includeDetails": true,
-  "maxResults": 50
+    "keyword": "comptable",
+    "location": "Paris",
+    "radius": 20,
+    "results_wanted": 100
 }
 ```
 
-## Pricing
+### Use a specific search URL
 
-| Event | Price (USD) | Description |
-| --- | --- | --- |
-| `job-start` | $0.05 | Per actor run |
-| `job-serp-result` | $0.003 | Per job listing from search results |
-| `job-detail-result` | $0.008 | Per job detail page fetched |
+```
+{
+    "startUrl": "https://candidat.francetravail.fr/offres/recherche?motsCles=admin&offresPartenaires=true&rayon=10&tri=0",
+    "results_wanted": 30
+}
+```
+
+### Quick URL-only mode (no detail pages)
+
+```
+{
+    "keyword": "infirmier",
+    "collectDetails": false,
+    "results_wanted": 200
+}
+```
+
+---
+
+## Sample Output
+
+```
+{
+    "job_title": "Secrétaire administratif et financier (H/F)",
+    "offer_id": "204WBLS",
+    "company": "SOCIETE D'APPLICATION DES GAZ POUR L'IND",
+    "location": "42 - ST ETIENNE",
+    "contract_type": "CDI",
+    "work_hours": "Temps plein",
+    "salary": "Annuel de 28000.00 Euros à 33000.00 Euros sur 12 mois",
+    "date_posted": "03 mars 2026",
+    "description_text": "OBJET DU POSTE - Accueil - Administration générale - Réaliser et suivre les commandes fournisseurs...",
+    "experience": "3 An(s)",
+    "formation": "Bac+2 ou équivalents Secrétariat assistanat gestion PME PMI",
+    "skills": [
+        "Maitrise d'Excel",
+        "Notions comptables",
+        "Classer des documents",
+        "Gestion administrative du courrier"
+    ],
+    "languages": ["Anglais"],
+    "qualification": "Employé qualifié",
+    "sector": "Fabrication d'autres machines d'usage général",
+    "latitude": 45.418831,
+    "longitude": 4.420513,
+    "url": "https://candidat.francetravail.fr/offres/recherche/detail/204WBLS"
+}
+```
+
+---
+
+## Tips
+
+- **Use residential proxies** for most reliable results — France Travail may block datacenter IPs
+- **Set a reasonable `results_wanted`** to control costs and run time
+- **Enable `collectDetails`** for complete job information including salary, skills, and experience
+- **Disable `collectDetails`** for faster runs when you only need job titles and URLs
+- **Use `startUrl`** to scrape results from a pre-filtered search on the France Travail website
+
+---
+
+## Integrations
+
+Connect this scraper with other Apify tools:
+
+- **Google Sheets** — Automatically export job data to a spreadsheet
+- **Slack / Email** — Get notified when new jobs match your criteria
+- **Zapier / Make** — Build automated workflows with scraped data
+- **API** — Access results programmatically via the Apify REST API
+
+---
+
+## FAQ
+
+**How many jobs can I scrape?**
+You can scrape thousands of listings. Use `results_wanted` to set your limit.
+
+**Does this scraper handle pagination?**
+Yes, it automatically loads additional pages until your `results_wanted` limit or `max_pages` cap is reached.
+
+**Can I filter by contract type?**
+Yes, use the `contractType` input or include the filter in your `startUrl`.
+
+**Is the data in French?**
+Yes, France Travail is a French platform and all job listings are in French.
+
+**How often is the data updated?**
+France Travail updates listings in real time. Run the scraper as often as needed for fresh data.
+
+---
+
+## Legal Notice
+
+This scraper is designed for personal use, academic research, and legitimate business purposes. Please scrape responsibly and comply with France Travail's terms of service. The scraper does not collect any personal data of job seekers.
